@@ -22,7 +22,7 @@ This project provisions AWS infrastructure using **Terraform** and automatically
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/your-repository.git
+git clone https://github.com/awaisdevops/ansible.git
 cd your-repository
 ```
 
