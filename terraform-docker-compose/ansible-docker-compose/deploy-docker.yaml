@@ -1,0 +1,80 @@
+---
+# first play
+- name: Install Python3 and Docker 
+  hosts:  docker_server
+  become: yes #switching to root user
+  gather_facts: false #it a module that runs initially. as it uses pyhthon3 that is not installed yes. we're skipping it
+  tasks:
+    - name: Install Python3 and Docker
+      vars: #configuring Python2 as interpreter for yum
+        ansible_python_interpreter: /usr/bin/python
+      yum:
+        name:
+          - python3
+          - docker
+        update_cache: yes # yum update
+        state: present # install latest packages
+    
+    - name: Install docker-compose
+      get_url:
+        curl: https://github.com/docker/compose/releases/download/1.27.4/docker-compose-Linux-{{lookup('pipe', 'uname -m')}}
+        # accessing output of 'uname -m' shell command using lookup function that are ansible specific extensions to the jinja2 templating language  
+        dest: /usr/local/bin/docker-compose #donwloading file in bin dir
+        mode: +x # assigning execute permission
+    
+    # systemctl start doccker
+    - name: Start docker daemon
+      systemd: 
+        name: docker
+        state: started 
+
+     # usermod -aG docker ec2-user
+    - name: Add ec2-user to Group Docker
+      user:
+        name: ec2-user
+        groups: docker
+        append: yes
+    - name: Reconnect to server session
+      meta: reset_connection
+
+    # pip install docker-py. docker python is a dependency b/w ansible and python on remote
+    - name: Install docker python module
+      pip:
+        name: 
+          - docker #docker python module dor docker
+          - docker-compse #docker python module dor docker-compose
+
+- name: Start docker container
+  hosts:  docker_server
+  vars_prompt: #interactive input: prompts
+    - name: docker_password
+      prompt: Enter message for docker your docker registry #msg to display to user
+  tasks:
+    # cp docker-compose_file_location docker-compose_paste_location_on_remote
+    - name: copy docker-compose to remote node
+      copy:
+        src: docker-compose_file_location
+        dest: docker-compose_paste_location_on_remote
+
+    # logging to our private docker repository 
+    # docker login
+    - name: docker login
+      docker_login:
+        registry_url: https://index.docker.io/v1 #url for dockerhub.\
+        username: your-username
+        password: "{{docker_password}}" #providing password as variable
+
+    # docker compose -f docker-compose_paste_location_on_remote  up
+    - name: Start container from compose
+      docker_compose:
+        project_src: /home/ec2-user
+        state: present # "docker compose up", absent for "docker compose down"
+
+- name: Authenticate if docker is running
+  hosts: docker_server
+  tasks:
+    # ps aux | grep -i docker
+    - name: checking docker process
+      shell: ps aux | grep -i docker
+      register: app_status
+    - debug: msg="{{ app_status.stdout_lines }}"

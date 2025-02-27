@@ -1,0 +1,127 @@
+---
+# first play
+- name: install java and net tools packages
+  hosts: nexus_server
+  tasks:
+    # apt update
+    - name: Update apt repo and cache 
+      apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+    # apt install openjdk-17-jdk
+    - name: Install java 17
+      apt: name=openjdk-17-jdk
+
+    # apt install net-tools
+    - name: Install net tools
+      apt: name=net-tools
+
+# second play
+- name: Download and unpack Nexus installer
+  hosts: nexus_server
+  tasks:
+    # cd /opt/nexus
+    - name: Check Nexus direcytory stats
+      stat:
+        path: /opt/nexus
+      register: stat_results
+
+      # wget https://download.sonatype.com/nexus/3/latest-unix.tar.gz
+    - name: Download Nexus
+      get_url:
+        url: https://download.sonatype.com/nexus/3/latest-unix.tar.gz
+        dest: /opt/
+      register: doanload_result
+          
+     #  tar -zxvf latest-unix.tar.gz
+    - name: Untar Nexus installer
+      unarchive:
+        src: "{{ doanload_result.dest }}" # automatically retrieving the nexus installer absolute path
+        dest: /opt/
+        remote_src: True 
+      when: not stat_results.stat.exists #don't untar if nexus dir already exists
+      
+      # finding directory nexus-3.77.1-01
+    - name: Find Nexus directory
+      find: 
+        paths: /opt/
+        pattern: "nexus-*"
+        file_type: directory
+      register: find_result
+             
+    # Renaming nexus-3.77.1-01 directory to nexus
+    - name: Rename Nexus directory
+      shell: mv {{ find_result.files[0].path }} /opt/nexus
+      when: not stat_results.stat.exists #don't untar if nexus dir already exists
+
+# Third play
+- name: Create nexus user to own Nexus directories
+  hosts: nexus_server
+  # su - nexus
+  become: yes
+  become_user: nexus
+  tasks:
+    # create nexus user and group. -->> adduser nexus
+    - name: Create nexus group
+      group: 
+        name: nexus
+        state: present
+
+    - name: Create nexus user
+      user:
+        name: nexus
+        group:  nexus
+
+    # chown -R nexus:nexus nexus/  
+    # chown -R nexus:nexus sonatype-work/
+    - name: Changing nexus directory ownership and group 
+      file:
+        path: /opt/nexus
+        state: directory
+        owner: nexus
+        group: nexus
+        recurse: True
+
+    - name: Changing sonatype-work directory ownership and group
+      file:
+        path: /opt/sonatype-work
+        state: directory
+        owner: nexus
+        group: nexus
+        recurse: True
+# Fourth play
+- name: Start Nexus with Nexus user
+  hosts: nexus_server
+  tasks:
+    # run_as_user="nexus"
+    - name: Set run_as_user nexus
+      lineinfile: #module
+        path: /opt/nexus/bin/nexus.rc #file path
+        regexp: '^#run_as_user=""' # ^ shows regular expresion. line to be replaced
+        line: run_as_user="nexus" # line to replace in place of above mentioned line
+    
+    # /opt/nexus/bin/nexus start
+    - name: Start Nexus
+      command: /opt/nexus/bin/nexus start
+
+- name: Authenticate if Nexus is running
+  hosts: nexus_server
+  tasks:
+    # ps aux | grep -i nexus
+    - name: checking nexus process
+      shell: ps aux | grep -i nexus
+      register: app_status
+    - debug: msg="{{ app_status.stdout_lines }}"
+
+    - name: wait for 1 minute before executing next comand
+      pause:
+        minutes: 1 
+    #netstat -lnpt
+    - name: checking with netstat
+      shell: netstat -lnpt
+      register: app_status
+    - debug: msg="{{ app_status.stdout_lines }}"
+
+
+
+
+
+

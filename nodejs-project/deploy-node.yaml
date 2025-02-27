@@ -1,0 +1,75 @@
+---
+# First play
+- name: Install node and npm
+  hosts: server_ip_or_hostname
+  tasks:
+    - name: Update apt repo and cache
+
+      # apt update
+      ansible.builtin.apt:
+        update_cache: yes
+        force_apt_get: yes
+        cache_valid_time: 3600
+    
+    # apt install node, apt install npm
+    - name: Install nodejs and npm
+      ansible.builtin.apt:
+        name:
+          - nodejs
+          - npm
+        state: present
+
+# Second play
+- name: Create new linux user
+  hosts: server_ip_or_hostname
+  tasks:
+    
+    # adduser nodeuser1
+    - name: Create linux user
+      ansible.builtin.user:
+        name: nodeuser1
+        comment: user to execute nodejs-app app
+        group: sudo # addming user to sudo group
+
+# Third play
+- name: Deploy nodejs app
+  hosts: server_ip_or_hostname
+  become: yes
+  become_user: nodeuser1 #switching to user nodeuser1 
+  vars_files:
+    - project-vars # passing variables through variables file
+  tasks:
+    - name: Copy nodejs app code to the server
+
+    # cp local_source remote_destination
+      ansible.builtin.copy:
+        src: /opt/devops/ansible/react-nodejs-master.zip
+        dest: "{{ location }}react-nodejs.zip" # location on remote
+
+    - name: Unzip the nodejs app code
+      unarchive:
+        # unzip /opt/devops/ansible/react-nodejs-master.zip
+        src: "{{ location }}react-nodejs.zip"
+        dest: "{{ location }}"
+        remote_src: yes
+
+    - name: Install dependencies
+      # npm install
+      community.general.npm:
+        path: "{{ location }}react-nodejs-master.zip/package.json"
+
+    - name: Start the application
+      # node server
+      ansible.builtin.command:
+        cmd: node server
+        chdir: "{{ location }}react-nodejs-master.zip/app"
+      async: 1000 #starting the application asynchronously
+      poll: 0
+
+    - name: Ensure app is running
+      # ps aux | grep -i node
+      ansible.builtin.shell: ps aux | grep -i node
+      register: app_status
+
+    - debug:
+        msg: "{{ app_status.stdout_lines }}" # printing process info only
