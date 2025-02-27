@@ -1,0 +1,93 @@
+---
+# Playbook to wait for SSH connection to be available on the target hosts
+- name: Wait for SSH Connection
+  hosts: all 
+  gather_facts: false  #it a module that runs initially. as it uses pyhthon3 that is not installed yes. we're skipping it
+
+  tasks:
+    - name: Ensure ssh port is open
+      wait_for:  # hold configuration process untill ec2 is not up
+        port: 22  # Check for port 22 (SSH)
+        delay: 10  # Wait for 10 seconds before starting to check
+        timeout: 100  # Timeout after 100 seconds if the port is not open
+        search_regex: OpenSSH  # Ensure the correct SSH service (OpenSSH) is listening
+        host: '{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}'  # Specify the host for the SSH connection check, using variables to handle different connection parameters
+
+      vars:
+        ansible_connection: local  # Use the local connection type (run locally, no remote machine needed for this task)
+        ansible_python_interpreter: /usr/bin/python  # Set Python interpreter path (needed for tasks requiring Python)
+
+- name: Install Python3 and Docker 
+  hosts:  all
+  become: yes #switching to root user
+  gather_facts: false #it a module that runs initially. as it uses pyhthon3 that is not installed yes. we're skipping it
+  tasks:
+    - name: Install Python3 and Docker
+      vars: #configuring Python2 as interpreter for yum
+        ansible_python_interpreter: /usr/bin/python
+      yum:
+        name:
+          - python3
+          - docker
+        update_cache: yes # yum update
+        state: present # install latest packages
+    
+    - name: Install docker-compose
+      get_url:
+        curl: https://github.com/docker/compose/releases/download/1.27.4/docker-compose-Linux-{{lookup('pipe', 'uname -m')}}
+        # accessing output of 'uname -m' shell command using lookup function that are ansible specific extensions to the jinja2 templating language  
+        dest: /usr/local/bin/docker-compose #donwloading file in bin dir
+        mode: +x # assigning execute permission
+    
+    # systemctl start doccker
+    - name: Start docker daemon
+      systemd: 
+        name: docker
+        state: started 
+
+     # usermod -aG docker ec2-user
+    - name: Add ec2-user to Group Docker
+      user:
+        name: ec2-user
+        groups: docker
+        append: yes
+    - name: Reconnect to server session
+      meta: reset_connection
+
+    # pip install docker-py. docker python is a dependency b/w ansible and python on remote
+    - name: Install docker python module
+      pip:
+        name: 
+          - docker #docker python module dor docker
+          - docker-compse #docker python module dor docker-compose
+
+- name: Start docker container
+  hosts:  docker_server
+  vars_prompt: #interactive input: prompts
+    - name: docker_password
+      prompt: Enter message for docker your docker regostry #msg to display to user
+  tasks:
+    - name: copy docker-compose to remote node
+      copy:
+        src: /opt/devops/ansible/docker-compose.yaml
+        dest: /home/ec2-user/docker-compose.yaml
+
+    # logging to our private docker repository  
+    - name: docker login
+      docker_login:
+        registry_url: https://index.docker.io/v1 #url for dockerhub.\
+        username: awaisakram11199
+        password: "{{docker_password}}" #providing password as variable
+
+    # docker compose -f /home/ec2-user/docker-compose.yaml up
+    - name: Start container from compose
+      docker_compose:
+        project_src: /home/ec2-user
+        state: present # "docker compose up", absent for "docker compose down"
+
+
+
+
+
+
+      
