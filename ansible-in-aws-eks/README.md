@@ -12,7 +12,7 @@ The following resources are provided:
 
 Before running the playbook and infrastructure setup, ensure you have the following prerequisites:
 
-- **Ansible**: Installed on your local machine. You can install Ansible using `pip`:
+- **Ansible**: Installed on your local machine:
 
   ```bash
   sudo apt update
@@ -48,6 +48,7 @@ Before running the playbook and infrastructure setup, ensure you have the follow
   terraform --version  
 ```
 
+
 - **Kubernetes CLI (kubectl)**: Installed to verify the deployment after running the playbook.
 
   ```bash
@@ -58,7 +59,7 @@ Before running the playbook and infrastructure setup, ensure you have the follow
   sudo apt update
   sudo apt install -y kubectl
   kubectl version --client
-  ```
+```
 
 - **Ansible Kubernetes Collection**: Make sure you have the Ansible Kubernetes collection installed.
 
