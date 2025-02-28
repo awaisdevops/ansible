@@ -16,6 +16,7 @@ Before running the playbook and infrastructure setup, ensure you have the follow
 
   ```bash
   sudo apt update
+  sudo apt upgrade -y
   sudo apt install -y software-properties-common
   sudo add-apt-repository ppa:ansible/ansible
   sudo apt update
@@ -32,9 +33,6 @@ Before running the playbook and infrastructure setup, ensure you have the follow
   unzip awscliv2.zip
   sudo ./aws/install
   aws --version
-
-  aws configure
-  #configure your aws credentials 
   ```
 
 - **Terraform**: Installed for provisioning the infrastructure.
@@ -45,9 +43,8 @@ Before running the playbook and infrastructure setup, ensure you have the follow
   wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor > /usr/share/keyrings/hashicorp-archive-keyring.gpg
   sudo apt update
   sudo apt install terraform
-  terraform --version  
-```
-
+  terraform --version
+  ```
 
 - **Kubernetes CLI (kubectl)**: Installed to verify the deployment after running the playbook.
 
@@ -55,11 +52,12 @@ Before running the playbook and infrastructure setup, ensure you have the follow
   sudo apt update
   sudo apt install -y apt-transport-https ca-certificates curl
   curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor > /usr/share/keyrings/kubernetes-archive-keyring.gpg
-  echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+  echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee 
+  /etc/apt/sources.list.d/kubernetes.list
   sudo apt update
   sudo apt install -y kubectl
   kubectl version --client
-```
+  ```
 
 - **Ansible Kubernetes Collection**: Make sure you have the Ansible Kubernetes collection installed.
 
@@ -175,7 +173,6 @@ Run the following commands to provision the AWS infrastructure:
 
 ```bash
 terraform init
-terraform plan
 terraform apply
 ```
 
