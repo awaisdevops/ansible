@@ -1,2 +1,0 @@
-[docker_server]
-server_IP_address_hostname  ansible_user=root ansible_ssh_private_key_file=<path_to_yoyr_private_key>
