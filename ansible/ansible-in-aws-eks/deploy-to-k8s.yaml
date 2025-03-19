@@ -1,0 +1,17 @@
+- name: Depoly app in new namespace
+  hosts: localhost #this playbook will be executed locally on the k8s cluster
+  tasks:
+    - name: Create k8s namespace
+      k8s:
+        name: may-app
+        api_version: v1
+        kind: Namespace
+        state: present
+        kubeconfig: ./kubeconfig_myapp_eks_cluster #authenticate to your aws-eks cluster
+
+    - name: Deploy nginx app
+      k8s: 
+        source: ./nginx-config.yaml  #deploying to k8s from config file
+        state: present
+        kubeconfig: ./kubeconfig_myapp_eks_cluster #authenticate to your aws-eks cluster
+        namespace: may-app #will use our created ns. will override ns in config file

@@ -16,3 +16,5 @@
 .terraformrc
 terraform.rc
 
+.idea/*
+
