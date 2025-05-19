@@ -8,6 +8,18 @@ The following resources are provided:
 - **Ansible Playbook**: For deploying an NGINX application to the EKS cluster.
 - **Kubernetes Configurations**: For deploying the application in a Kubernetes namespace.
 
+### Technologies Used
+- Ansible
+- Terraform
+- Kubernetes
+- AWS EKS
+- Python
+- Linux
+
+### Project Description
+- Create EKS cluster with Terraform
+- Write Ansible Play to deploy application in a new K8s namespace
+
 ## Prerequisites
 
 Before running the playbook and infrastructure setup, ensure you have the following prerequisites:
@@ -34,6 +46,33 @@ Before running the playbook and infrastructure setup, ensure you have the follow
   sudo ./aws/install
   aws --version
   ```
+
+The k8s module uses the settings in the kubeconfig to directly connect to the k8s cluster and execute kubectl commands there. That's why we don't have to configure the IP address of the k8s cluster in an inventory. To create a kubeconfig file in `~/.kube`, execute the following aws cli commands:
+
+```sh
+# make sure your aws configuration is set to the region of the EKS cluster
+aws configure list
+#       Name                    Value             Type    Location
+#       ----                    -----             ----    --------
+#    profile                <not set>             None    None
+# access_key     ****************BDVT shared-credentials-file    
+# secret_key     ****************eXn0 shared-credentials-file    
+#     region             eu-central-1      config-file    ~/.aws/config
+
+# make sure there is no old ~/.kube/config file
+rm ~/.kube/config
+# or rename it to a backup
+mv ~/.kube/config ~/.kube/config.backup
+
+# now create a new ~/.kube/config file
+aws eks update-kubeconfig --name myapp-eks-cluster
+# Added new context arn:aws:eks:eu-central-1:369076538622:cluster/myapp-eks-cluster to ~/.kube/config
+
+# check the connection
+kubectl cluster-info
+# Kubernetes control plane is running at https://270D50B8942EEAF943C6008C9D1F8AB6.sk1.eu-central-1.eks.amazonaws.com
+# CoreDNS is running at https://270D50B8942EEAF943C6008C9D1F8AB6.sk1.eu-central-1.eks.amazonaws.com/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+```
 
 - **Terraform**: Installed for provisioning the infrastructure.
 
@@ -173,7 +212,16 @@ Run the following commands to provision the AWS infrastructure:
 
 ```bash
 terraform init
-terraform apply
+terraform apply --auto-approve
+
+# ...
+# Plan: 55 to add, 0 to change, 0 to destroy.
+# ...
+# module.eks.aws_eks_cluster.this[0]: Creation complete after 8m52s [id=myapp-eks-cluster]
+# ...
+# module.eks.module.eks_managed_node_group["dev"].aws_eks_node_group.this[0]: Creation complete after 1m59s [id=myapp-eks-cluster:dev-2023081821024258520000000f]
+# 
+# Apply complete! Resources: 55 added, 0 changed, 0 destroyed.
 ```
 
 This will provision the following resources:
@@ -299,6 +347,17 @@ Execute the following Ansible command to deploy the NGINX application to your EK
 
 ```bash
 ansible-playbook deploy-to-k8s.yaml
+
+# PLAY [Deploy application to k8s in new namespace] *********************************************************************************************
+# 
+# TASK [Gathering Facts] ************************************************************************************************************************
+# ok: [localhost]
+# 
+# TASK [Create a k8s namespace] *****************************************************************************************************************
+# changed: [localhost]
+# 
+# PLAY RECAP ************************************************************************************************************************************
+# localhost                  : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
 ```
 
 This will:
@@ -314,6 +373,25 @@ After running the playbook, verify the NGINX deployment in your AWS EKS cluster:
 ```bash
 kubectl get deployments -n may-app
 kubectl get services -n may-app
+
+kubectl get ns
+# NAME              STATUS   AGE
+# default           Active   11m
+# kube-node-lease   Active   11m
+# kube-public       Active   11m
+# kube-system       Active   11m
+# ns-myapp          Active   108s  <--
+```
+
+Check that the components are available:
+```sh
+kubectl get pod -n ns-myapp
+# NAME                    READY   STATUS    RESTARTS   AGE
+# nginx-55f598f8d-4wbtf   1/1     Running   0          25s
+
+kubectl get svc -n ns-myapp
+# NAME    TYPE           CLUSTER-IP      EXTERNAL-IP                                                                 PORT(S)        AGE
+# nginx   LoadBalancer   172.20.47.155   ab9795411453644c4b1f3cf46d5f6a05-841880191.eu-central-1.elb.amazonaws.com   80:31780/TCP   41s
 ```
 
 You should see the NGINX deployment and the LoadBalancer service created.
