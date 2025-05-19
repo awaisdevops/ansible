@@ -7,18 +7,19 @@ This repository contains an Ansible playbook that automates the installation, co
 ![Sample Image](assets/3.PNG)
 ![Sample Image](assets/4.PNG)
 
-## Table of Contents
+### Topics of the Demo Project
+Automate Nexus deployment
 
-- [Overview](#overview)
-- [Prerequisites](#prerequisites)
-- [Playbook Breakdown](#playbook-breakdown)
-  - [First Play: Install Java and Net Tools](#first-play-install-java-and-net-tools)
-  - [Second Play: Download and Unpack Nexus Installer](#second-play-download-and-unpack-nexus-installer)
-  - [Third Play: Create Nexus User and Set Permissions](#third-play-create-nexus-user-and-set-permissions)
-- [Usage](#usage)
-- [License](#license)
+### Technologies Used
+- Ansible
+- Nexus
+- DigitalOcean
+- Java
+- Linux
 
-## Overview
+### Project Description
+- Create Server on DigitalOcean
+- Write Ansible Playbook that creates Linux user for Nexus, configure server, installs and deploys Nexus and verifies that it is running successfully
 
 This Ansible playbook automates the installation of **Nexus Repository Manager** by performing the following tasks:
 
@@ -36,6 +37,9 @@ Before running this playbook, ensure you have the following:
 - **Sudo privileges** on the remote server.
 - The **nexus_server** defined in your Ansible inventory file.
 - A supported Linux distribution (e.g., Ubuntu) running on your server.
+
+#### Steps to create a server on DigitalOcean
+Login to your account on [DigitalOcean](https://cloud.digitalocean.com/login) and create a new Droplet (Frankfurt, Ubuntu, Shared CPU, Regular, 4GB / 2CPU). Use the existing SSH key and name it 'ubuntu-ansible-demo-2'. Copy the IP address of the new droplet (104.248.17.245).
 
 ## Playbook Breakdown
 
@@ -154,6 +158,7 @@ This play creates the **nexus** user and sets proper file permissions for the Ne
    ```
 
 4. The playbook will automatically install **Java 17**, download and unpack **Nexus**, and configure the Nexus service on your remote server.
+
 
 ## License
 
