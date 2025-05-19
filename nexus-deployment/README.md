@@ -163,6 +163,5 @@ This play creates the **nexus** user and sets proper file permissions for the Ne
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-```
 
 ---
