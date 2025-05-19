@@ -2,6 +2,13 @@
 
 This project provisions AWS infrastructure using **Terraform** and automatically configures an EC2 instance using **Ansible**. The infrastructure includes a Virtual Private Cloud (VPC), a subnet, security groups, an EC2 instance, and a route table with an internet gateway for internet access. The EC2 instance is provisioned with a Docker environment using Ansible.
 
+### Technologies Used
+- Ansible
+- Terraform
+- AWS
+- Docker
+- Linux
+
 ## Project Overview
 
 - **AWS VPC**: Creates a VPC with a specified CIDR block.
@@ -223,10 +230,131 @@ terraform init
 Run the Terraform apply command to create the infrastructure:
 
 ```bash
-terraform apply
+terraform apply --auto-approve
+
+# ...
+# Plan: 7 to add, 0 to change, 0 to destroy.
+# 
+# Changes to Outputs:
+#   + ec2_public_ip = (known after apply)
+# aws_key_pair.ssh-key: Creating...
+# aws_vpc.myapp-vpc: Creating...
+# aws_key_pair.ssh-key: Creation complete after 0s [id=server-key]
+# aws_vpc.myapp-vpc: Creation complete after 1s [id=vpc-0154298e127eaf317]
+# aws_internet_gateway.myapp-igw: Creating...
+# aws_subnet.myapp-subnet-1: Creating...
+# aws_default_security_group.default-sg: Creating...
+# aws_internet_gateway.myapp-igw: Creation complete after 0s [id=igw-040cc46df15ccc927]
+# aws_default_route_table.main-rtb: Creating...
+# aws_subnet.myapp-subnet-1: Creation complete after 0s [id=subnet-0ba2bea98ffc6dc77]
+# aws_default_route_table.main-rtb: Creation complete after 1s [id=rtb-0dbc83b804e969c4d]
+# aws_default_security_group.default-sg: Creation complete after 2s [id=sg-022aac444a3f70289]
+# aws_instance.myapp-server: Creating...
+# aws_instance.myapp-server: Still creating... [10s elapsed]
+# aws_instance.myapp-server: Still creating... [20s elapsed]
+# aws_instance.myapp-server: Still creating... [30s elapsed]
+# aws_instance.myapp-server: Provisioning with 'local-exec'...
+# aws_instance.myapp-server (local-exec): Executing: ["/bin/sh" "-c" "ansible-playbook --inventory 3.123.24.206, --private-key /Users/fsiegrist/.ssh/id_ed25519 --user ec2-user deploy-docker.yaml"]
+# 
+# aws_instance.myapp-server (local-exec): PLAY [Wait until EC2 instance accepts SSH connections] *************************
+# 
+# aws_instance.myapp-server (local-exec): TASK [Ensure ssh port is open] *************************************************
+# aws_instance.myapp-server: Still creating... [40s elapsed]
+# aws_instance.myapp-server (local-exec): ok: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): PLAY [Install Docker] **********************************************************
+# 
+# aws_instance.myapp-server (local-exec): TASK [Gathering Facts] *********************************************************
+# aws_instance.myapp-server (local-exec): ok: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): TASK [Ensure Docker is installed] **********************************************
+# aws_instance.myapp-server: Still creating... [50s elapsed]
+# aws_instance.myapp-server (local-exec): changed: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): PLAY [Install Docker Compose] **************************************************
+# 
+# aws_instance.myapp-server (local-exec): TASK [Gathering Facts] *********************************************************
+# aws_instance.myapp-server: Still creating... [1m0s elapsed]
+# aws_instance.myapp-server (local-exec): ok: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): TASK [Get architecture of remote machine] **************************************
+# aws_instance.myapp-server (local-exec): changed: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): TASK [Download and install Docker Compose] *************************************
+# aws_instance.myapp-server (local-exec): changed: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): PLAY [Start Docker] ************************************************************
+# 
+# aws_instance.myapp-server (local-exec): TASK [Gathering Facts] *********************************************************
+# aws_instance.myapp-server (local-exec): ok: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): TASK [Ensure Docker daemon is started] *****************************************
+# aws_instance.myapp-server (local-exec): changed: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): PLAY [Add ec2-user to docker group] ********************************************
+# 
+# aws_instance.myapp-server (local-exec): TASK [Gathering Facts] *********************************************************
+# aws_instance.myapp-server: Still creating... [1m10s elapsed]
+# aws_instance.myapp-server (local-exec): ok: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): TASK [Add ec2-user to docker group] ********************************************
+# aws_instance.myapp-server (local-exec): changed: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): TASK [Reset ssh connection to allow user changes to affect 'current login user'] ***
+# 
+# aws_instance.myapp-server (local-exec): PLAY [Install pip3] ************************************************************
+# 
+# aws_instance.myapp-server (local-exec): TASK [Gathering Facts] *********************************************************
+# aws_instance.myapp-server (local-exec): ok: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): TASK [Ensure pip3 is installed] ************************************************
+# aws_instance.myapp-server (local-exec): changed: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): PLAY [Install required Python modules] *****************************************
+# 
+# aws_instance.myapp-server (local-exec): TASK [Gathering Facts] *********************************************************
+# aws_instance.myapp-server (local-exec): ok: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): TASK [Install Python modules 'docker' and 'docker-compose'] ********************
+# aws_instance.myapp-server: Still creating... [1m20s elapsed]
+# aws_instance.myapp-server (local-exec): changed: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): PLAY [Start Docker containers] *************************************************
+# 
+# aws_instance.myapp-server (local-exec): TASK [Gathering Facts] *********************************************************
+# aws_instance.myapp-server (local-exec): ok: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): TASK [Copy docker-compose.yaml] ************************************************
+# aws_instance.myapp-server (local-exec): changed: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): TASK [Make sure a Docker login against the private registry on Docker Hub is established] ***
+# aws_instance.myapp-server: Still creating... [1m30s elapsed]
+# aws_instance.myapp-server (local-exec): changed: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): TASK [Start containers from docker-compose file] *******************************
+# aws_instance.myapp-server: Still creating... [1m40s elapsed]
+# aws_instance.myapp-server: Still creating... [1m50s elapsed]
+# aws_instance.myapp-server: Still creating... [2m0s elapsed]
+# aws_instance.myapp-server: Still creating... [2m10s elapsed]
+# aws_instance.myapp-server (local-exec): changed: [3.123.24.206]
+# 
+# aws_instance.myapp-server (local-exec): PLAY RECAP *********************************************************************
+# aws_instance.myapp-server (local-exec): 3.123.24.206               : ok=18   changed=10   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+# 
+# aws_instance.myapp-server: Creation complete after 2m17s [id=i-0e5a125af3d7b1ebc]
+# 
+# Apply complete! Resources: 7 added, 0 changed, 0 destroyed.
+# 
+# Outputs:
+# 
+# ec2_public_ip = "3.123.24.206"
 ```
 
-Terraform will prompt for confirmation. Type `yes` to proceed.
+Don't forget to cleanup when you're done:
+```sh
+terraform destroy --auto-approve
+```
+
 
 ### 6. Ansible Playbook (`deploy-docker.yaml`)
 
