@@ -448,6 +448,10 @@ ssh ec2-user@3.76.251.81
 [ec2-user@ip-10-0-10-235 ~]$ docker ps
 # CONTAINER ID   IMAGE                                                 COMMAND                  CREATED         STATUS         PORTS                                                  NAMES
 # 75b7801f6ad4   fsiegrist/fesi-repo:bootcamp-java-mysql-project-1.0   "java -jar /opt/boot…"   6 minutes ago   Up 5 minutes   0.0.0.0:8080->8080/tcp, :::8080->8080/tcp              bootcamp-java-mysql
+
+## License
+
+MIT License
 # c5f2c2996ee5   phpmyadmin:5.2.1                                      "/docker-entrypoint.…"   6 minutes ago   Up 6 minutes   0.0.0.0:8081->80/tcp, :::8081->80/tcp                  phpmyadmin
 # c996607eb6d4   mysql:8.0.32                                          "docker-entrypoint.s…"   6 minutes ago   Up 6 minutes   0.0.0.0:3306->3306/tcp, :::3306->3306/tcp, 33060/tcp   mysql
 ```
