@@ -2,9 +2,41 @@
 
 This repository provides a guide to integrate Ansible into a Jenkins pipeline for automating infrastructure provisioning and server configurations. In this setup, instead of installing Ansible as a tool within Jenkins, we will install Ansible on a separate server and integrate it with the Jenkins pipeline.
 
-### Steps for Integration:
+### Technologies Used
+- Ansible
+- Jenkins
+- DigitalOcean
+- AWS
+- Boto3
+- Docker
+- Java
+- Maven
+- Linux
+- Git
 
-## 1. Install Python Modules on Ansible Server
+### Project Description
+- Create and configure a dedicated server for Jenkins
+- Create and configure a dedicated server for Ansible Control Node
+- Create 2 EC2 instances to be managed by Ansible
+- Write Ansible Playbook, which configures 2 EC2 instances
+- Add ssh key file credentials in Jenkins for Ansible Control Node server and Ansible Managed Node servers
+- Configure Jenkins to execute the Ansible Playbook on remote Ansible Control Node server as part of the CI/CD pipeline
+- So the Jenkinsfile configuration will do the following:
+  - a. Connect to the remote Ansible Control Node server
+  - b. Copy Ansible playbook and configuration files to the remote Ansible Control Node server
+  - c. Copy the ssh keys for the Ansible Managed Node servers to the Ansible Control Node server 
+  - d. Install Ansible, Python3 and Boto3 on the Ansible Control Node server
+  - e. With everything installed and copied to the remote Ansible Control Node server, execute the
+  playbook remotely on that Control Node that will configure the 2 EC2 Managed Nodes
+
+## Steps for Integration:
+
+### 1: Create a Dedicated Server for Jenkins
+We're gonna reuse the same Jenkins server we already used in a couple of other demo projects (the one we created in module 8 on a DigitalOcean droplet).
+
+- Login to your [DigitalOcean account](https://cloud.digitalocean.com/login) and create a new Droplet (Frankfurt, Ubuntu 22.04, Shared CPU Basic, Regular Disk Type SSD, 2GB / 2CPU / 60GB SSD) and give it the hostname 'ansible-control-node'.
+
+### 2. Install Python Modules on Ansible Server
 First, install the required Python modules (`boto3` and `botocore`) for interacting with AWS.
 
 ```bash
@@ -14,14 +46,14 @@ python3 -c "import boto3; print(boto3.__version__)"
 python3 -c "import botocore; print(botocore.__version__)"
 ```
 
-## 2. Configure AWS Credentials on Ansible Server
+### 3. Configure AWS Credentials on Ansible Server
 Create the `.aws` directory in the home directory of the user executing Ansible on the server. Place your AWS credentials (`aws_access_key_id` and `aws_secret_access_key`) in the `credentials` file. This is essential for fetching AWS EC2 instance details using the dynamic inventory plugin `aws_ec2`.
 
 ```bash
 ~/.aws/credentials
 ```
 
-## 3. Copy Configuration Files from Jenkins to Ansible Server
+### 4. Copy Configuration Files from Jenkins to Ansible Server
 Our Jenkins pipeline will copy necessary files such as the target nodes' PEM file and Ansible configuration files to the Ansible server. 
 
 The following files need to be included in your Git repository:
@@ -32,36 +64,36 @@ The following files need to be included in your Git repository:
 
 These files will be copied to the Ansible server by Jenkins during pipeline execution.
 
-## 4. Jenkins Server Configuration
+### 5. Jenkins Server Configuration
 
-### a. Install SSH Agent Plugin
+#### a. Install SSH Agent Plugin
 The SSH Agent Plugin will allow Jenkins to copy files from the Jenkins server to the Ansible server using SCP and SSH.
 
 1. Log in to Jenkins → **Manage Jenkins** → **Manage Plugins**
 2. Search for **SSH Plugin** and install it.
 
-### b. Configure SSH Credentials for Ansible Server
+#### b. Configure SSH Credentials for Ansible Server
 1. Log in to Jenkins → **Manage Jenkins** → **Manage Credentials**
 2. Add SSH credentials for the Ansible server with the necessary private key.
 
-### c. Convert SSH Key to Classic OpenSSH Format (if needed)
+#### c. Convert SSH Key to Classic OpenSSH Format (if needed)
 Ensure the SSH key used with Jenkins is in the classic OpenSSH format. Use the following command to convert it:
 
 ```bash
 ssh-keygen -p -m PEM -f /path/to/your/private-key -P "" -N ""
 ```
 
-### d. Configure SSH Credentials for Target Nodes
+#### d. Configure SSH Credentials for Target Nodes
 1. Log in to Jenkins → **Manage Jenkins** → **Manage Credentials**
 2. Add SSH credentials for the target nodes (e.g., EC2 instances) using their private key.
 
-### e. Install Credentials Binding Plugin
+#### e. Install Credentials Binding Plugin
 Install the **Credentials Binding Plugin** for securely handling credentials in Jenkins pipelines.
 
-### f. Configure GitHub/GitLab/Bitbucket Credentials (if required)
+#### f. Configure GitHub/GitLab/Bitbucket Credentials (if required)
 Configure Git credentials for connecting to repositories stored on GitHub, GitLab, or Bitbucket. You can add SSH keys or personal access tokens based on the repository host.
 
-## 5. Create Jenkins Pipeline
+### 6. Create Jenkins Pipeline
 Create a **Multibranch Pipeline** in Jenkins:
 
 1. Log in to Jenkins → **New Item** → **Multibranch Pipeline**
@@ -69,7 +101,7 @@ Create a **Multibranch Pipeline** in Jenkins:
 3. Configure additional settings like discovering branches and pull requests.
 4. Save the pipeline.
 
-## 6. Execute Ansible Playbook from Jenkins
+### 7. Execute Ansible Playbook from Jenkins
 Install the **SSH Pipeline Steps Plugin** to enable executing commands (including Ansible playbooks) remotely on the Ansible server.
 
 1. Log in to Jenkins → **Manage Jenkins** → **Manage Plugins**
