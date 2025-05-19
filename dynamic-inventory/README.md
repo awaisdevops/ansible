@@ -242,8 +242,8 @@ resource "null_resource" "configure-server" {
 
 Note that the reference to `self.public_ip` had to be adjusted to `aws_instance.myapp-server.public_ip`.
 
+Check the documentation of the [null_resource](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource).
+
 ## License
 
 MIT License
-
-Check the documentation of the [null_resource](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource).
