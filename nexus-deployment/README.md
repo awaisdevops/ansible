@@ -166,8 +166,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ```
 
 ---
-
-### Key Points:
-1. **Prerequisites**: Ensure that the prerequisites are met, such as having Ansible installed, proper SSH access, and sudo privileges.
-2. **Playbook Breakdown**: The playbook is divided into sections, each performing a distinct set of tasks (installing Java, unpacking Nexus, setting permissions).
-3. **Usage**: Instructions on how to clone the repository, configure it, and run the Ansible playbook.
